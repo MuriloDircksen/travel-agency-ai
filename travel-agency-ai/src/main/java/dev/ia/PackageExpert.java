@@ -1,11 +1,12 @@
 package dev.ia;
 
+import dev.ia.tools.BookingTools;
 import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
-@RegisterAiService
+@RegisterAiService(tools = BookingTools.class)
 public interface PackageExpert {
 
     @SystemMessage("""

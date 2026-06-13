@@ -21,8 +21,11 @@ public class RagConfiguration {
                         .maxResults(3) //top 3 segmentos no banco de vetores
                         // Sem um limite de relevância, consultas fora do contexto ainda
                         // recuperariam o catálogo inteiro e o modelo nunca recusaria.
+                        // Com nomic-embed-text e texto em português, perguntas legítimas
+                        // (ex.: política de cancelamento) costumam pontuar ~0.5-0.6; 0.6
+                        // filtrava esses segmentos e o modelo acabava recusando.
                         // Ajuste entre 0.5 e 0.75 conforme a qualidade da recuperação.
-                        .minScore(0.6)
+                        .minScore(0.5)
                         .build()
                 ).build();
     }

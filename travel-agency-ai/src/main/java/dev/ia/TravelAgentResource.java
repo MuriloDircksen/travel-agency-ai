@@ -2,12 +2,7 @@ package dev.ia;
 
 import io.smallrye.mutiny.Multi;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.UUID;
@@ -33,10 +28,22 @@ public class TravelAgentResource {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public String ask(@QueryParam("session") @DefaultValue("") String session, String question) {
+    public String ask
+            (@QueryParam("session") @DefaultValue("") String session,
+             String question, @HeaderParam("X-User-Name") String userName
+            ) {
         // Usa o id de sessão informado pelo cliente ou gera um novo por requisição,
         // evitando que uma resposta antiga "fixe" todas as respostas seguintes.
         String memoryId = session.isBlank() ? UUID.randomUUID().toString() : session;
-        return expert.chat(memoryId, question);
+        if (userName !=null && !userName.isEmpty()) {
+            try{
+                SecurityContext.setCurrentUser(userName);
+                return expert.chat(memoryId, question);
+            } finally {
+                SecurityContext.clear();
+            }
+        } else {
+            return "Usuário precisa estar autenticado";
+        }
     }
 }
