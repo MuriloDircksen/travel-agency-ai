@@ -1,7 +1,7 @@
-package dev.ia.models;
+package dev.ia.travel.models;
 
-import dev.ia.enums.BookingStatus;
-import dev.ia.enums.Category;
+import dev.ia.travel.enums.BookingStatus;
+import dev.ia.travel.enums.Category;
 
 import java.time.LocalDate;
 

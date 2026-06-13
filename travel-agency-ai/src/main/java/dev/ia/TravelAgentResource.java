@@ -1,6 +1,5 @@
 package dev.ia;
 
-import io.smallrye.mutiny.Multi;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -13,7 +12,8 @@ public class TravelAgentResource {
     //@Inject
     //TravelAgentAssistant assistant;
     @Inject
-    PackageExpert expert;
+    PackageExpertWithTemplate expert;
+
     /*
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
@@ -35,13 +35,16 @@ public class TravelAgentResource {
         // Usa o id de sessão informado pelo cliente ou gera um novo por requisição,
         // evitando que uma resposta antiga "fixe" todas as respostas seguintes.
         String memoryId = session.isBlank() ? UUID.randomUUID().toString() : session;
-        if (userName !=null && !userName.isEmpty()) {
-            try{
-                SecurityContext.setCurrentUser(userName);
-                return expert.chat(memoryId, question);
-            } finally {
-                SecurityContext.clear();
-            }
+        if (userName != null && !userName.isEmpty()) {
+            // Injeta a identidade autenticada na mensagem para que o modelo possa
+            // repassá-la às ferramentas de reserva (ex.: autorização do cancelamento).
+            String authenticatedQuestion = "[Usuário autenticado: " + userName + "]\n" + question;
+            String answer = expert.chat(memoryId, authenticatedQuestion, userName);
+            // O modelo pode devolver conteúdo vazio (ex.: após uma chamada de ferramenta),
+            // o que faria o JAX-RS responder 204 No Content. Garantimos sempre um corpo.
+            return (answer == null || answer.isBlank())
+                    ? "Desculpe, não consegui processar sua solicitação. Tente novamente."
+                    : answer;
         } else {
             return "Usuário precisa estar autenticado";
         }

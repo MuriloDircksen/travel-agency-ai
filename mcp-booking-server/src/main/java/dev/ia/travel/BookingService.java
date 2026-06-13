@@ -1,8 +1,8 @@
-package dev.ia;
+package dev.ia.travel;
 
-import dev.ia.enums.BookingStatus;
-import dev.ia.enums.Category;
-import dev.ia.models.Booking;
+import dev.ia.travel.enums.BookingStatus;
+import dev.ia.travel.enums.Category;
+import dev.ia.travel.models.Booking;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDate;
@@ -29,11 +29,11 @@ public class BookingService {
 
     public Optional<Booking> getBookingDetails(long bookingId) { return Optional.ofNullable(bookings.get(bookingId)); }
 
-    public Optional<Booking> cancelBooking(long bookingId) {
-        String currentUser = SecurityContext.getCurrentUser();
+    public Optional<Booking> cancelBooking(long bookingId, String name) {
+
         if (bookings.containsKey(bookingId)) {
             Booking booking = bookings.get(bookingId);
-            if(booking.customerName().endsWith(currentUser)) {
+            if(booking.customerName().endsWith(name)) {
                 Booking cancelledBooking = new Booking(booking.id(), booking.customerName(), booking.destination(),
                         booking.startDate(), booking.endDate(), BookingStatus.CANCELLED, booking.category());
                 bookings.put(bookingId, cancelledBooking);
