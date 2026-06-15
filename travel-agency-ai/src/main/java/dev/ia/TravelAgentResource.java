@@ -1,5 +1,6 @@
 package dev.ia;
 
+import dev.langchain4j.guardrail.InputGuardrailException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -39,12 +40,14 @@ public class TravelAgentResource {
             // Injeta a identidade autenticada na mensagem para que o modelo possa
             // repassá-la às ferramentas de reserva (ex.: autorização do cancelamento).
             String authenticatedQuestion = "[Usuário autenticado: " + userName + "]\n" + question;
-            String answer = expert.chat(memoryId, authenticatedQuestion, userName);
-            // O modelo pode devolver conteúdo vazio (ex.: após uma chamada de ferramenta),
-            // o que faria o JAX-RS responder 204 No Content. Garantimos sempre um corpo.
-            return (answer == null || answer.isBlank())
-                    ? "Desculpe, não consegui processar sua solicitação. Tente novamente."
-                    : answer;
+            try {
+                String answer = expert.chat(memoryId, authenticatedQuestion, userName);
+                return (answer == null || answer.isBlank())
+                        ? "Desculpe, não consegui processar sua solicitação. Tente novamente."
+                        : answer;
+            } catch (InputGuardrailException e) {
+                return "Sua mensagem foi bloqueada por conter instruções não permitidas.";
+            }
         } else {
             return "Usuário precisa estar autenticado";
         }
